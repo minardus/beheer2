@@ -1,0 +1,17 @@
+group 'demo.tasks'
+version '1.0'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile 'net.danlew:android.joda:2.8.2'
+    compile 'org.jdom:jdom2:2.0.6'
+    compile 'org.jfree:jfreechart:1.0.19'
+}
