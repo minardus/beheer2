@@ -1,12 +1,8 @@
 package demo.tasks;
 
 import junit.framework.TestCase;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Created by wdalo on 11-10-2015.

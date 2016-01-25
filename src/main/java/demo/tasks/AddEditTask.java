@@ -1,28 +1,23 @@
 package demo.tasks;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
+import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
+import net.sourceforge.jdatepicker.impl.UtilDateModel;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
 
 class AddEditTask extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTextField textFieldName;
-    private JTextField textFieldDeadline;
     private JComboBox<String> comboBoxStatus;
     private JTextArea textAreaDescription;
     private JComboBox<String> comboBoxPriority;
+    private JDatePickerImpl jDatePickerImplDeadline;
+    private JDatePanelImpl jDatePanelImpl;
     private final List<Task> tasks;
     private final Main main;
     private final Integer id;
@@ -49,15 +44,24 @@ class AddEditTask extends JDialog {
 
             // Load data if existing task is loaded.
             textFieldName.setText(tasks.get(id).getName());
-            textFieldDeadline.setText(tasks.get(id).getDeadline());
+            jDatePickerImplDeadline.setTextEditable(true);
+
+            String date[] = tasks.get(id).getDeadline().split("-");
+
+            jDatePanelImpl.getModel().setDate(Integer.parseInt(date[2]), Integer.parseInt(date[1]) - 1, Integer.parseInt(date[0]));
+            jDatePanelImpl.getModel().setSelected(true);
+            jDatePickerImplDeadline.setTextEditable(false);
+
+
             comboBoxPriority.setSelectedIndex(tasks.get(id).getPriority());
             comboBoxStatus.setSelectedIndex(tasks.get(id).getStatus());
             textAreaDescription.setText(tasks.get(id).getDescription());
-        } else {
-            // Set date if a task is created.
-            textFieldDeadline.setText(new SimpleDateFormat("dd-MM-yyyy").format(new Date()));
-        }
+        }else {
 
+            Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+            jDatePanelImpl.getModel().setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE));
+            jDatePanelImpl.getModel().setSelected(true);
+        }
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -96,25 +100,12 @@ class AddEditTask extends JDialog {
         if (Objects.equals(textFieldName.getText(), "")) {
             errors.add("- Task name is empty");
         }
-
-        // Check user input for wrong formatted date.
-        Pattern pattern = Pattern.compile("(0?[1-9]|[12][0-9]|3[01])-(0?[1-9]|1[012])-((19|20)\\d\\d)");
-        Matcher matcher = pattern.matcher(textFieldDeadline.getText());
-
-        if (matcher.matches()) {
-            if (!validDate(textFieldDeadline.getText())) {
-                errors.add("- Date is not valid");
-            }
-        } else {
-            errors.add("- Date is not in format dd-mm-yyy");
-        }
-
         if (errors.size() == 0) {
             if (id != null) {
-                tasks.set(id, new Task(textFieldName.getText(), textFieldDeadline.getText(), comboBoxPriority.getSelectedIndex(), comboBoxStatus.getSelectedIndex(), textAreaDescription.getText()));
+                tasks.set(id, new Task(textFieldName.getText(), Integer.toString(jDatePickerImplDeadline.getModel().getDay()) + "-" + Integer.toString(jDatePickerImplDeadline.getModel().getMonth() + 1) + "-" + Integer.toString(jDatePickerImplDeadline.getModel().getYear()), comboBoxPriority.getSelectedIndex(), comboBoxStatus.getSelectedIndex(), textAreaDescription.getText()));
 
             } else {
-                tasks.add(new Task(textFieldName.getText(), textFieldDeadline.getText(), comboBoxPriority.getSelectedIndex(), comboBoxStatus.getSelectedIndex(), textAreaDescription.getText()));
+                tasks.add(new Task(textFieldName.getText(), Integer.toString(jDatePickerImplDeadline.getModel().getDay()) + "-" + Integer.toString(jDatePickerImplDeadline.getModel().getMonth() + 1) + "-" + Integer.toString(jDatePickerImplDeadline.getModel().getYear()), comboBoxPriority.getSelectedIndex(), comboBoxStatus.getSelectedIndex(), textAreaDescription.getText()));
             }
         } else {
 
@@ -139,19 +130,6 @@ class AddEditTask extends JDialog {
         }
     }
 
-    private boolean validDate(String date) {
-
-        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("dd-MM-yyyy");
-
-        try {
-            DateTime dateTime = dateTimeFormatter.parseDateTime(date);
-        } catch (Exception e) {
-            return false;
-        }
-
-        return true;
-    }
-
     private void onCancel() {
 // add your code here if necessary
         dispose();
@@ -162,5 +140,11 @@ class AddEditTask extends JDialog {
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
+    }
+
+    private void createUIComponents() {
+        UtilDateModel utilDateModel = new UtilDateModel();
+        jDatePanelImpl = new JDatePanelImpl(utilDateModel);
+        jDatePickerImplDeadline = new JDatePickerImpl(jDatePanelImpl);
     }
 }
